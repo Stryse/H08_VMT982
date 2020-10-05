@@ -25,12 +25,15 @@ class Talk {
         while(isAlive.get()) {
             String line;
             try {
-                while ((line = System.console().readLine()) != null) {
+                while (isAlive.get() && (line = System.console().readLine()) != null) {
                     connection.send(line);
                 }
-            } catch(Exception e) { e.printStackTrace(); }
-
-            shutdown(connection,isAlive);
+            } catch(Exception e) {
+              System.out.println("Connection lost...");
+            } finally{
+              System.out.println("Shutdown...");
+              shutdown(connection,isAlive);
+            }
         }
     }
 
@@ -44,12 +47,15 @@ class Talk {
         while(isAlive.get()){
             String line;
             try{
-                while((line = connection.receive()) != null){
+                while((line = connection.receive()) != null && isAlive.get()){
                     System.out.println(String.format(">>%s<<",line));
                 }
-            }catch (Exception e){}
-
-            shutdown(connection,isAlive);
+            }catch (Exception e){
+                System.out.println("Connection lost");
+            } finally {
+                System.out.println("Shutdown...");
+                shutdown(connection,isAlive);
+            }
         }
 
     }
@@ -59,7 +65,7 @@ class Talk {
         try {
             connection.close();
             isAlive.stop();
-        } catch (Exception e) {}
+        } catch (Exception e) { e.printStackTrace(); }
 
     }
 
