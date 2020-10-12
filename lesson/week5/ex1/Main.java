@@ -75,11 +75,11 @@ class Talk {
         // Elindít egy szálat, mely a readFromConsole eljárást hajtja végre.
         // Ezután végrehajtja a receiveFromConnection eljárást.
         try {
-            Connection connection = (isServer) ? Connection.accept() : Connection.connect();
-            Alive isConnectionAlive = new Alive();
-            (new Thread(()->{
-                readFromConsole(connection,isConnectionAlive);
-            })).start();
+            final Connection connection = (isServer) ? Connection.accept() : Connection.connect();
+            final Alive isConnectionAlive = new Alive();
+            Thread reader = new Thread(()->{ readFromConsole(connection,isConnectionAlive);});
+            reader.setDaemon(true);
+            reader.start();
             receiveFromConnection(connection,isConnectionAlive);
 
         } catch (Exception e){
@@ -94,7 +94,7 @@ class Talk {
         // A stop() metódussal az értéket hamisra lehet állítani.
         // Mivel az osztályt több szálból használjuk, legyen szálbiztos.
 
-        private volatile boolean isAlive;
+        private boolean isAlive;
 
         public Alive() {
             isAlive = true;
